@@ -36,6 +36,7 @@ import uk.ac.ebi.eva.pipeline.jobs.deciders.SkipStepDecider;
 import uk.ac.ebi.eva.pipeline.jobs.steps.VepAnnotationGeneratorStep;
 import uk.ac.ebi.eva.pipeline.jobs.steps.VepInputGeneratorStep;
 import uk.ac.ebi.eva.pipeline.jobs.steps.AnnotationLoaderStep;
+import uk.ac.ebi.eva.pipeline.listeners.JobDurationListener;
 
 /**
  * @author Diego Poggioli
@@ -79,7 +80,8 @@ public class AnnotationJob extends CommonJobStepInitialization{
     public Job variantAnnotationBatchJob(){
         JobBuilder jobBuilder = jobBuilderFactory
                 .get(jobName)
-                .incrementer(new RunIdIncrementer());
+                .incrementer(new RunIdIncrementer())
+                .listener(new JobDurationListener(jobName));
 
         return jobBuilder.start(optionalAnnotationFlow()).build().build();
     }

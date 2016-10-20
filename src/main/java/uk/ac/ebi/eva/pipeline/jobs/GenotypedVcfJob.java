@@ -31,6 +31,7 @@ import org.springframework.context.annotation.*;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 
 import uk.ac.ebi.eva.pipeline.jobs.steps.VariantLoaderStep;
+import uk.ac.ebi.eva.pipeline.listeners.JobDurationListener;
 
 import javax.annotation.PostConstruct;
 
@@ -80,7 +81,8 @@ public class GenotypedVcfJob extends CommonJobStepInitialization{
 
         JobBuilder jobBuilder = jobBuilderFactory
                 .get(jobName)
-                .incrementer(new RunIdIncrementer());
+                .incrementer(new RunIdIncrementer())
+                .listener(new JobDurationListener(jobName));;
 
         Flow parallelStatisticsAndAnnotation = new FlowBuilder<Flow>(PARALLEL_STATISTICS_AND_ANNOTATION)
                 .split(new SimpleAsyncTaskExecutor())

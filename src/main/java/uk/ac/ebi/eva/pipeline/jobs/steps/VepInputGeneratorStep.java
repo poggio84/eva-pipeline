@@ -17,10 +17,12 @@ package uk.ac.ebi.eva.pipeline.jobs.steps;
 
 import com.mongodb.DBObject;
 
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import uk.ac.ebi.eva.pipeline.configuration.JobOptions;
 import uk.ac.ebi.eva.pipeline.io.readers.NonAnnotatedVariantsMongoReader;
 import uk.ac.ebi.eva.pipeline.io.writers.VepInputFlatFileWriter;
 import uk.ac.ebi.eva.pipeline.jobs.steps.processors.AnnotationProcessor;
+import uk.ac.ebi.eva.pipeline.listeners.StepDurationListener;
 import uk.ac.ebi.eva.pipeline.model.VariantWrapper;
 
 import org.slf4j.Logger;
@@ -75,7 +77,16 @@ public class VepInputGeneratorStep {
                 .reader(new NonAnnotatedVariantsMongoReader(jobOptions.getPipelineOptions()))
                 .processor(new AnnotationProcessor())
                 .writer(new VepInputFlatFileWriter(jobOptions.getVepInput()))
+                .taskExecutor(simpleAsyncTaskExecutor()).throttleLimit(20)
                 .allowStartIfComplete(jobOptions.getPipelineOptions().getBoolean("config.restartability.allow"))
+                .listener(new StepDurationListener(FIND_VARIANTS_TO_ANNOTATE))
                 .build();
+    }
+
+    @Bean
+    public SimpleAsyncTaskExecutor simpleAsyncTaskExecutor(){
+        SimpleAsyncTaskExecutor simpleAsyncTaskExecutor = new SimpleAsyncTaskExecutor();
+        simpleAsyncTaskExecutor.setConcurrencyLimit(10);
+        return simpleAsyncTaskExecutor;
     }
 }
